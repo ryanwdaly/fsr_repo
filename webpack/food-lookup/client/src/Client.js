@@ -1,10 +1,11 @@
 /* eslint-disable no-undef */
 function search(query, cb) {
-  return fetch(`http://localhost:3001/api/food?q=${query}`, {
+  return fetch(`/api/food?q=${query}`, {
     accept: 'application/json',
   }).then(checkStatus)
     .then(parseJSON)
-    .then(cb);
+    .then(cb)
+    .catch((error) => console.log(error.message));
 }
 
 function checkStatus(response) {
