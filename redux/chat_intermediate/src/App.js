@@ -124,6 +124,7 @@ class MessageInput extends React.Component {
       text: this.state.value,
       threadId: this.props.threadId,
     });
+    
     this.setState({
       value: '',
     });
