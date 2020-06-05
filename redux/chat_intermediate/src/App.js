@@ -29,13 +29,29 @@ function reducer(state, action) {
     };
 
   } else if (action.type === 'DELETE_MESSAGE') {
-    return {
-      messages: state.messages.filter((m) => (
-        m.id !== action.id
+    const threadIndex = state.threads.findIndex(
+      (t) => t.messages.find((m) => (
+        m.id === action.id
       ))
+    );
+    const oldThread = state.threads[threadIndex]
+    const newThread = {
+      ...oldThread, 
+      messages: oldThread.messages.filter((m) => (
+        m.id !== action.id
+      )),
     };
-  } else {
-    return state;
+
+    return {
+      ...state,
+      threads: [
+        ...state.threads.lslice(0, threadIndex),
+        newThread,
+        ...state.threads.slice(
+          threadIndex + 1, state.threads.length
+        ),
+      ],
+    };
   }
 }
 
