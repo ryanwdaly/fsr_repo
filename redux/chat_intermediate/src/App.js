@@ -1,91 +1,118 @@
 import React from 'react';
 import uuid from 'uuid';
-import { createStore } from 'redux';
+import { createStore, combineReducers } from 'redux';
 
-function reducer(state, action) {
-  if (action.type === 'ADD_MESSAGE') {
-    const newMessage = {
-      text: action.text,
-      timestamp: Date.now(),
-      id: uuid.v4(),
-    };
-    const threadIndex = state.threads.findIndex(
-      (t) => t.id === action.threadId
-    );
-    const oldThread = state.threads[threadIndex];
-    const newThread = {
-      ...oldThread,
-      messages: oldThread.messages.concat(newMessage),
-    };
 
-    return {
-      ...state,
-      threads: [
-        ...state.threads.slice(0, threadIndex),
-        newThread,
-        ...state.threads.slice(
-          threadIndex + 1, state.threads.length
-        ),
-      ],
-    };
-  } else if (action.type === 'DELETE_MESSAGE') {
-    const threadIndex = state.threads.findIndex(
-      (t) => t.messages.find((m) => (
-        m.id === action.id
-      ))
-    );
-    const oldThread = state.threads[threadIndex];
+const reducer = combineReducers({
+  activeThreadid: activeThreadIdReducer,
+  threads: threadsReducer,
+});
 
-    const newThread = {
-      ...oldThread,
-      messages: oldThread.messages.filter((m) => (
-        m.id !== action.id
-      )),
-    };
-
-    return {
-      ...state,
-      threads: [
-        ...state.threads.slice(0, threadIndex),
-        newThread,
-        ...state.threads.slice(
-          threadIndex + 1, state.threads.length
-        ),
-      ],
-    };
-  } else if (action.type === 'OPEN_THREAD') {
-    return {
-      ...state,
-      activeThreadId: action.id,
-    };
+function activeThreadIdReducer(state = '1-fca2', action) {
+  if (action.type === 'OPEN_THREAD') {
+    return action.id;
   } else {
     return state;
-  };
-};
+  }
+}
 
-const initialState = {
-  activeThreadId: '1-fca2',
-  threads: [
-    {
-      id: '1-fca2',
-      title: 'Buzz Aldrin',
-      messages: [
-        {
-          text: 'Twelve minutes to ignition.',
-          timestamp: Date.now(),
-          id: uuid.v4(),
-        },
-      ],
-    },
-    {
-      id: '2-be91',
-      title: 'Michael Collins',
-      messages: [],
-    },
-  ],
-};
+function findThreadIndex(threads, action) {
+  switch (action.type) {
+    case 'ADD_MESSAGE': {
+      return threads.findIndex(
+        (t) => t.id === action.threadId
+      );
+    }
+    case 'DELETE_MESSAGE': {
+      return threads.findIndex(
+        (t) => t.messages.find((m) => (
+          m.id === action.id
+        ))
+      );
+    }
+  }
+}
 
-const store = createStore(reducer, initialState);
+function threadsReducer(state = [
+  {
+    id: '1-fca2',
+    title: 'Buzz Aldrin',
+    messages: messagesReducer(undefined, {})
+  },
+  {
+    id: '2-be91',
+    title: 'Michael Collins',
+    messages: messagesReducer(undefined, {}),
+  },
+], action) {
+  switch (action.type) {
+    case 'ADD_MESSAGE':
+    case 'DELETE_MESSAGE': {
+      const threadIndex = findThreadIndex(state, action);
+
+      const oldThread = state[threadIndex];
+      const newThread = {
+        ...oldThread,
+        messages: messagesReducer(oldThread.messages, action),
+      };
+
+      return [
+        ...state.slice(0, threadIndex),
+        newThread,
+        ...state.slice(
+          threadIndex + 1, state.length
+        ),
+      ];
+    }
+    default: {
+      return state;
+    }
+  }
+}
+
+function messagesReducer(state = [], action) {
+  switch (action.type) {
+    case 'ADD_MESSAGE': {
+      const newMessage = {
+        text: action.text,
+        timestamp: Date.now(),
+        id: uuid.v4(),
+      };
+      return state.concat(newMessage);
+    }
+    case 'DELETE_MESSAGE': {
+      return state.filter(m => m.id !== action.id);
+    }
+    default: {
+      return state;
+    }
+  }
+
+}
+
+// const initialState = {
+//   activeThreadId: '1-fca2',
+//   threads: [
+//     {
+//       id: '1-fca2',
+//       title: 'Buzz Aldrin',
+//       messages: [
+//         {
+//           text: 'Twelve minutes to ignition.',
+//           timestamp: Date.now(),
+//           id: uuid.v4(),
+//         },
+//       ],
+//     },
+//     {
+//       id: '2-be91',
+//       title: 'Michael Collins',
+//       messages: [],
+//     },
+//   ],
+// };
+
+const store = createStore(reducer);
 
 class App extends React.Component {
   componentDidMount() {
