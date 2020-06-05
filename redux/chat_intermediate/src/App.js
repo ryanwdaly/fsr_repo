@@ -4,7 +4,7 @@ import { createStore, combineReducers } from 'redux';
 
 
 const reducer = combineReducers({
-  activeThreadid: activeThreadIdReducer,
+  activeThreadId: activeThreadIdReducer,
   threads: threadsReducer,
 });
 
@@ -90,28 +90,6 @@ function messagesReducer(state = [], action) {
 
 }
 
-// const initialState = {
-//   activeThreadId: '1-fca2',
-//   threads: [
-//     {
-//       id: '1-fca2',
-//       title: 'Buzz Aldrin',
-//       messages: [
-//         {
-//           text: 'Twelve minutes to ignition.',
-//           timestamp: Date.now(),
-//           id: uuid.v4(),
-//         },
-//       ],
-//     },
-//     {
-//       id: '2-be91',
-//       title: 'Michael Collins',
-//       messages: [],
-//     },
-//   ],
-// };
-
 const store = createStore(reducer);
 
 class App extends React.Component {
@@ -142,7 +120,7 @@ class App extends React.Component {
   }
 }
 
-/* eslint-disable react/prefer-stateless-function */
+
 
 class ThreadTabs extends React.Component {
   handleClick = (id) => {
